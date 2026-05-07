@@ -769,7 +769,7 @@ function notify(msg,type="ok"){
   el.textContent=msg;el.className="notif "+type;el.style.display="block";
   setTimeout(()=>el.style.display="none",3500);
 }
-function fmt(v){return S.cfg.currency+" "+parseFloat(v).toLocaleString("es",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmt(v){return S.cfg.currency+" "+parseFloat(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fdate(ds){const d=new Date(ds+"T12:00:00");return d.toLocaleDateString("es",{day:"2-digit",month:"2-digit",year:"numeric"});}
 
 // ===== YEAR HELPERS =====
@@ -959,8 +959,8 @@ function buildChart(){
     {label:"Ofrendas",data:oD,backgroundColor:"#5090f0",borderRadius:3,borderSkipped:false},
     {label:"Egresos",data:eD,backgroundColor:"#e04535",borderRadius:3,borderSkipped:false}
   ]},options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>S.cfg.currency+" "+ctx.parsed.y.toLocaleString("es",{minimumFractionDigits:2})}}},
-    scales:{y:{ticks:{color:"#8A8A7A",callback:v=>S.cfg.currency+" "+Number(v).toLocaleString("es")},grid:{color:"rgba(255,255,255,.05)"}},x:{ticks:{color:"#8A8A7A"},grid:{display:false}}}
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>S.cfg.currency+" "+ctx.parsed.y.toLocaleString("en-US",{minimumFractionDigits:2})}}},
+    scales:{y:{ticks:{color:"#8A8A7A",callback:v=>S.cfg.currency+" "+Number(v).toLocaleString("en-US")},grid:{color:"rgba(255,255,255,.05)"}},x:{ticks:{color:"#8A8A7A"},grid:{display:false}}}
   }});
 }
 
@@ -1540,8 +1540,8 @@ function renderAnual(){
       {label:"Ofrendas",data:mData.map(d=>d.off),backgroundColor:"#5090f0",borderRadius:3,borderSkipped:false},
       {label:"Egresos",data:mData.map(d=>d.exp),backgroundColor:"#e04535",borderRadius:3,borderSkipped:false}
     ]},options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>S.cfg.currency+" "+ctx.parsed.y.toLocaleString("es",{minimumFractionDigits:2})}}},
-      scales:{y:{ticks:{color:"#8A8A7A",callback:v=>S.cfg.currency+" "+Number(v).toLocaleString("es")},grid:{color:"rgba(255,255,255,.05)"}},x:{ticks:{color:"#8A8A7A"},grid:{display:false}}}
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>S.cfg.currency+" "+ctx.parsed.y.toLocaleString("en-US",{minimumFractionDigits:2})}}},
+      scales:{y:{ticks:{color:"#8A8A7A",callback:v=>S.cfg.currency+" "+Number(v).toLocaleString("en-US")},grid:{color:"rgba(255,255,255,.05)"}},x:{ticks:{color:"#8A8A7A"},grid:{display:false}}}
     }});
   // Month cards
   const balColor=b=>b>=0?"var(--gr2)":"var(--rd2)";
