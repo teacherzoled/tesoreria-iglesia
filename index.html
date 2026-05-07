@@ -816,12 +816,32 @@ function allYearFilter(selId){
   el.innerHTML="<option value='all'>Todos los años</option>"+yearRange().map(y=>`<option value="${y}"${y===cur?" selected":""}>${y}</option>`).join("");
 }
 
+// ===== DATE FIXER =====
+function fixDate(raw){
+  if(!raw)return"";
+  const s=String(raw).trim();
+  // Already YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  // Date object string from Google Sheets e.g. "Thu Dec 31 2025 00:00:00 GMT..."
+  const d=new Date(s);
+  if(!isNaN(d.getTime())){
+    const yr=d.getFullYear();
+    const mo=String(d.getMonth()+1).padStart(2,"0");
+    const dy=String(d.getDate()).padStart(2,"0");
+    return `${yr}-${mo}-${dy}`;
+  }
+  // DD/MM/YYYY
+  const dmy=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(dmy)return`${dmy[3]}-${dmy[2].padStart(2,"0")}-${dmy[1].padStart(2,"0")}`;
+  return s;
+}
+
 // ===== LOAD =====
 async function loadData(){
   try{
     loading(true);
     const[tr,cr,al,br]=await Promise.all([api("get"),api("getconfig"),api("getaudit"),api("getbudgets")]);
-    if(tr.status==="ok")S.txs=tr.data.map(t=>({...t,amount:parseFloat(t.amount)||0,receipt:t.receipt||"",imgData:t.imgData||"",service:t.service||""}));
+    if(tr.status==="ok")S.txs=tr.data.map(t=>({...t,amount:parseFloat(t.amount)||0,receipt:t.receipt||"",imgData:t.imgData||"",service:t.service||"",date:fixDate(t.date)}));
     if(cr.status==="ok"&&cr.config)S.cfg={...S.cfg,...cr.config};
     if(al.status==="ok")S.auditLog=al.data||[];
     if(br.status==="ok")S.budgets=br.budgets||{};
