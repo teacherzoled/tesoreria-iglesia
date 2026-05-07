@@ -1451,19 +1451,75 @@ function renderReport(){
   el.innerHTML=h;
 }
 
-// ===== EXPORT CSV =====
+// ===== EXPORT EXCEL (formatted like printed report) =====
 function exportCSV(){
   const m=parseInt(document.getElementById("r-mon")?.value);
   const y=parseInt(document.getElementById("r-yr")?.value);
   if(isNaN(m)||isNaN(y)){notify("Selecciona un mes primero.","err");return;}
+
+  const fom=new Date(y,m,1);
+  const prev=S.txs.filter(t=>new Date(t.date+"T12:00:00")<fom);
+  const sA=prev.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0)-prev.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
   const txs=S.txs.filter(t=>{const d=new Date(t.date+"T12:00:00");return d.getMonth()===m&&d.getFullYear()===y;}).sort((a,b)=>new Date(a.date)-new Date(b.date));
-  const rows=[["Fecha","Tipo","Categoría","Descripción","Servicio","Recibo","Monto"]];
-  txs.forEach(t=>rows.push([t.date,t.type==="income"?"Ingreso":"Egreso",t.category,t.description||"",t.service||"",t.receipt||"",t.amount]));
+
+  const tith=txs.filter(t=>t.category==="Diezmos").reduce((s,t)=>s+t.amount,0);
+  const off=txs.filter(t=>t.category==="Ofrendas Ordinarias"||t.category==="Ofrenda Especial").reduce((s,t)=>s+t.amount,0);
+  const othInc=txs.filter(t=>t.type==="income"&&t.category!=="Diezmos"&&t.category!=="Ofrendas Ordinarias"&&t.category!=="Ofrenda Especial"&&t.category!=="Saldo Anterior");
+  const oth=othInc.reduce((s,t)=>s+t.amount,0);
+  const ing=tith+off+oth;
+  const eTxs=txs.filter(t=>t.type==="expense");
+  const exp=eTxs.reduce((s,t)=>s+t.amount,0);
+  const sub=sA+ing;
+  const sal=sub-exp;
+  const C=S.cfg.currency;
+  const f=v=>parseFloat(v).toFixed(2);
+
+  const rows=[];
+  const push=(a,b="")=>rows.push([a,b]);
+
+  // Header
+  push(S.cfg.name);
+  push("REPORTE DE TESORERÍA GENERAL");
+  push(`${MONTHS[m]} ${y}`);
+  push("");
+
+  // INGRESOS section
+  push("INGRESOS","CANTIDAD ("+C+")");
+  push("Saldo Anterior", f(sA));
+  push("Diezmos del Mes", f(tith));
+  push("Ofrendas del Mes", f(off));
+  othInc.forEach(t=>push(t.description||t.category, f(t.amount)));
+  push("Total Ingresos del Mes", f(ing));
+  push("Sub-Total", f(sub));
+  push("");
+
+  // EGRESOS section
+  rows.push(["FECHA","EGRESOS","NO. RECIBO","CANTIDAD ("+C+")"]);
+  eTxs.forEach(t=>rows.push([t.date, t.description||t.category, t.receipt||"—", f(t.amount)]));
+  rows.push(["","","Total de Egresos", f(exp)]);
+  push("");
+
+  // RESUMEN
+  push("RESUMEN DEL MES","");
+  push("Saldo Anterior", f(sA));
+  push("Diezmos del Mes", f(tith));
+  push("Ofrendas del Mes", f(off));
+  push("Otros Ingresos", f(oth));
+  push("Subtotal", f(sub));
+  push("Egresos del Mes", f(exp));
+  push("SALDO ACTUAL", f(sal));
+  push("");
+  push("Tesorero: "+( S.cfg.treasurer||""));
+
   const ws=XLSX.utils.aoa_to_sheet(rows);
+
+  // Column widths
+  ws["!cols"]=[{wch:30},{wch:40},{wch:16},{wch:18}];
+
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,`${MONTHS[m]} ${y}`);
-  XLSX.writeFile(wb,`Tesoreria_${MONTHS[m]}_${y}.xlsx`);
-  notify("✓ Exportado como Excel.");
+  XLSX.writeFile(wb,`Reporte_Tesoreria_${MONTHS[m]}_${y}.xlsx`);
+  notify("✓ Reporte exportado como Excel.");
 }
 
 // ===== ANNUAL SUMMARY =====
