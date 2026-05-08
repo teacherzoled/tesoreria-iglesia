@@ -751,6 +751,16 @@ let S={
 // ===== API =====
 async function api(action,params={}){
   if(!S.url)throw new Error("No URL");
+  // Use POST for image uploads to avoid URL length limits
+  if(action==="addimg"||action==="add"){
+    const body=new URLSearchParams();
+    body.append("action",action);
+    Object.entries(params).forEach(([k,v])=>{
+      body.append(k,typeof v==="object"?JSON.stringify(v):String(v));
+    });
+    const r=await fetch(S.url,{method:"POST",body});
+    return await r.json();
+  }
   let u=S.url+"?action="+action;
   Object.entries(params).forEach(([k,v])=>{
     u+="&"+k+"="+encodeURIComponent(typeof v==="object"?JSON.stringify(v):String(v));
@@ -1145,8 +1155,8 @@ function openCropper(event){
 }
 function applyCrop(){
   if(!S.cropper)return;
-  const canvas=S.cropper.getCroppedCanvas({maxWidth:1200,maxHeight:1200,fillColor:"#fff"});
-  S.pendingImg=canvas.toDataURL("image/jpeg",.82);
+  const canvas=S.cropper.getCroppedCanvas({maxWidth:800,maxHeight:800,fillColor:"#fff"});
+  S.pendingImg=canvas.toDataURL("image/jpeg",.55);
   const thumb=document.getElementById("eg-img-thumb");
   thumb.src=S.pendingImg;
   document.getElementById("eg-img-thumb-wrap").style.display="block";
@@ -1249,10 +1259,18 @@ async function saveEgreso(){
   if(!date){err.textContent="Ingresa una fecha.";err.style.display="block";return;}
   if(!amt||amt<=0){err.textContent="Ingresa un monto válido.";err.style.display="block";return;}
   err.style.display="none";
-  const tx={id:Date.now().toString(),date,type:"expense",category:cat,description:desc||cat,receipt,imgData:S.pendingImg||"",createdAt:new Date().toISOString(),service:"",amount:amt};
+  const imgData=S.pendingImg||"";
+  const tx={id:Date.now().toString(),date,type:"expense",category:cat,description:desc||cat,receipt,imgData:"",createdAt:new Date().toISOString(),service:"",amount:amt};
   try{
-    loading(true);await api("add",{data:tx});S.txs.push(tx);
-    await addAudit("Registró Egreso",`${tx.description} — ${fmt(amt)}${receipt?" (Rec. "+receipt+")":""}`);
+    loading(true);
+    await api("add",{data:tx});
+    // Send image separately if present
+    if(imgData){
+      try{await api("addimg",{id:tx.id,imgData});}catch(e){console.warn("Image save failed",e);}
+    }
+    tx.imgData=imgData;
+    S.txs.push(tx);
+    await addAudit("Registró Egreso",`${tx.description} — ${fmt(amt)}${receipt?" (Rec. "+receipt+")":""}${imgData?" (con imagen)":""}`);
     notify("✓ Egreso guardado en Google Sheets.");
     document.getElementById("eg-desc").value="";document.getElementById("eg-amt").value="";
     document.getElementById("eg-receipt").value="";
