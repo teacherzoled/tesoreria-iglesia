@@ -474,17 +474,15 @@ mark{background:rgba(201,162,39,.3);color:var(--gold);border-radius:2px;padding:
     </div>
     <div class="card">
       <div style="margin-bottom:.875rem">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.6rem">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.75rem">
           <div class="card-title" style="margin:0">Registro de Egresos</div>
           <div style="font-size:.7rem;color:var(--muted)">Total: <span id="eg-month-total" style="color:var(--rd2);font-weight:700">—</span></div>
         </div>
-        <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
-          <input type="text" id="eg-search" placeholder="Buscar egresos..." oninput="renderEgresos()" style="flex:1;min-height:40px;font-size:.85rem;padding:8px 12px">
-        </div>
-        <div style="display:flex;gap:.5rem">
-          <select id="eg-filter-cat" onchange="renderEgresos()" style="flex:1;min-height:40px;font-size:.82rem;padding:8px 10px"><option value="all">Todas las categorías</option></select>
-          <select id="eg-filter-mon" onchange="renderEgresos()" style="flex:1;min-height:40px;font-size:.82rem;padding:8px 10px"></select>
-          <select id="eg-filter-yr" onchange="renderEgresos()" style="flex:0 0 auto;min-height:40px;font-size:.82rem;padding:8px 10px"></select>
+        <input type="text" id="eg-search" placeholder="Buscar egresos..." oninput="renderEgresos()" style="width:100%;min-height:44px;font-size:.85rem;padding:8px 12px;margin-bottom:.5rem;display:block">
+        <select id="eg-filter-cat" onchange="renderEgresos()" style="width:100%;min-height:44px;font-size:.85rem;padding:8px 12px;margin-bottom:.5rem;display:block"><option value="all">Todas las categorías</option></select>
+        <div style="display:grid;grid-template-columns:1fr 80px;gap:.5rem">
+          <select id="eg-filter-mon" onchange="renderEgresos()" style="width:100%;min-height:44px;font-size:.85rem;padding:8px 10px"></select>
+          <select id="eg-filter-yr" onchange="renderEgresos()" style="width:100%;min-height:44px;font-size:.85rem;padding:6px 4px;text-align:center"></select>
         </div>
       </div>
       <div id="egresos-list"><div class="empty">Sin egresos registrados</div></div>
