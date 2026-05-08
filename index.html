@@ -834,7 +834,7 @@ async function loadData(){
   try{
     loading(true);
     const[tr,cr,al,br]=await Promise.all([api("get"),api("getconfig"),api("getaudit"),api("getbudgets")]);
-    if(tr.status==="ok")S.txs=tr.data.map(t=>({...t,amount:parseFloat(t.amount)||0,receipt:t.receipt||"",imgData:t.imgData||"",service:t.service||"",date:fixDate(t.date)}));
+    if(tr.status==="ok")S.txs=tr.data.map(t=>({...t,id:String(t.id),amount:parseFloat(t.amount)||0,receipt:t.receipt||"",imgData:t.imgData||"",service:t.service||"",date:fixDate(t.date)}));
     if(cr.status==="ok"&&cr.config)S.cfg={...S.cfg,...cr.config};
     if(al.status==="ok")S.auditLog=al.data||[];
     if(br.status==="ok")S.budgets=br.budgets||{};
@@ -1003,8 +1003,8 @@ function txHTML(t,showDel,q=""){
   const rec=t.receipt?`<span class="receipt-badge">Rec. ${q?highlight(t.receipt,q):t.receipt}</span>`:"";
   const edited=t.editedAt?`<span class="edited-badge">editado</span>`:"";
   const imgBtn=t.imgData?`<button class="btn-action" onclick="viewImg('${t.id}','${(t.description||t.category).replace(/'/g,"")}')">🖼</button>`:"";
-  const editBtn=(showDel&&(S.role==="treasurer"||S.role==="auditor"))?`<button class="btn-action" onclick="openEdit('${t.id}')">✏</button>`:"";
-  const delBtn=(showDel&&S.role==="treasurer")?`<button class="btn-del" onclick="deleteTx('${t.id}')">×</button>`:"";
+  const editBtn=(showDel&&(S.role==="treasurer"||S.role==="auditor"))?`<button class="btn-action" onclick="openEdit('${String(t.id)}')">✏</button>`:"";
+  const delBtn=(showDel&&S.role==="treasurer")?`<button class="btn-del" onclick="deleteTx('${String(t.id)}')">×</button>`:"";
   return `<div class="tx-item">
     <div class="tx-left">
       <div class="tx-name">${name}</div>
@@ -1297,7 +1297,7 @@ function renderEgresos(){
 
 // ===== EDIT =====
 function openEdit(id){
-  const t=S.txs.find(x=>x.id===id);if(!t)return;
+  const t=S.txs.find(x=>String(x.id)===String(id));if(!t)return;
   S.editingId=id;
   const isI=t.type==="income";
   const isTith=t.category==="Diezmos";
@@ -1318,7 +1318,7 @@ function openEdit(id){
   document.getElementById("edit-modal").classList.add("open");
 }
 async function saveEdit(){
-  const t=S.txs.find(x=>x.id===S.editingId);if(!t)return;
+  const t=S.txs.find(x=>String(x.id)===String(S.editingId));if(!t)return;
   const date=document.getElementById("edit-date").value;
   const desc=document.getElementById("edit-desc").value.trim();
   const amt=parseFloat(document.getElementById("edit-amt").value);
@@ -1343,7 +1343,7 @@ async function saveEdit(){
 
 // ===== DELETE =====
 async function deleteTx(id){
-  const t=S.txs.find(x=>x.id===id);
+  const t=S.txs.find(x=>String(x.id)===String(id));
   if(!confirm("¿Eliminar esta transacción?"))return;
   try{
     loading(true);await api("delete",{id});
