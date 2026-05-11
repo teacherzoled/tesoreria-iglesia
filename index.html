@@ -167,7 +167,8 @@ select option{background:var(--card)}
 .rep-table .tot td{font-weight:700;background:var(--card)}
 .rep-footer{text-align:right;font-size:.82rem;margin-top:1.1rem;padding-top:.75rem;border-top:1px solid var(--bord);color:var(--muted)}
 .rep-footer strong{color:var(--text)}
-.rep-hide-sm{display:table-cell}
+.rep-hide-sm{display:none}
+.mobile-hint{display:block}
 
 /* ANNUAL */
 .annual-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
@@ -219,6 +220,8 @@ mark{background:rgba(201,162,39,.3);color:var(--gold);border-radius:2px;padding:
   .modal-bg{align-items:center;padding:1rem}
   .modal{border-radius:14px;max-width:520px}
   .mval{font-size:1.2rem}
+  .rep-hide-sm{display:table-cell}
+  .mobile-hint{display:none!important}
 }
 @media(min-width:900px){
   .content{padding:1.5rem}
@@ -229,7 +232,6 @@ mark{background:rgba(201,162,39,.3);color:var(--gold);border-radius:2px;padding:
 @media(max-width:380px){
   .tab{padding:10px 12px;font-size:.75rem}
   .mval{font-size:1rem}
-  .rep-hide-sm{display:none}
   .hdr-sub{display:none}
 }
 @media print{
