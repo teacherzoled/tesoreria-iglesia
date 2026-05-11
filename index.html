@@ -277,14 +277,15 @@ mark{background:rgba(201,162,39,.3);color:var(--gold);border-radius:2px;padding:
   <div class="login-city" id="l-city">Ciudad Melchor de Mencos, Petén, Guatemala</div>
   <div class="login-sys">Sistema de Tesorería General</div>
   <div class="login-card">
-    <button class="btn-viewer" onclick="enterRole('viewer')">Ver Dashboard · Solo Lectura</button>
-    <div class="divider"><span>Acceso con PIN</span></div>
     <div class="form-group">
       <label class="section-label">PIN de Acceso</label>
-      <input type="password" id="pin-in" placeholder="Tesorero o Auditor" maxlength="6" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="password" id="pin-in" placeholder="Ingresa tu PIN" maxlength="6" onkeydown="if(event.key==='Enter')doLogin()">
       <div id="pin-err" class="error-msg">PIN incorrecto. Intenta de nuevo.</div>
     </div>
     <button class="btn-gold" onclick="doLogin()">Entrar →</button>
+    <div style="margin-top:.875rem;text-align:center;font-size:.75rem;color:var(--dim)">
+      Solo Lectura · Tesorero · Auditor
+    </div>
   </div>
   <div style="margin-top:1rem;font-size:.7rem;color:var(--dim);text-align:center" id="conn-status">⏳ Conectando con Google Sheets...</div>
 </div>
@@ -654,6 +655,7 @@ mark{background:rgba(201,162,39,.3);color:var(--gold);border-radius:2px;padding:
     </div>
     <div class="card">
       <div class="card-title">PINs de Acceso</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:1rem">Cada rol tiene su propio PIN. El PIN de Solo Lectura es para el pastor, junta y hermanos autorizados.</div>
       <div class="form-grid">
         <div>
           <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:.5rem">PIN Tesorero</div>
@@ -668,6 +670,14 @@ mark{background:rgba(201,162,39,.3);color:var(--gold);border-radius:2px;padding:
           <div class="form-group"><label class="section-label">Nuevo PIN</label><input type="password" id="pa-new" maxlength="6"></div>
           <div class="form-group"><label class="section-label">Confirmar</label><input type="password" id="pa-conf" maxlength="6"></div>
           <button class="btn-gold" onclick="changePin('auditor')" style="width:auto;padding:10px 24px">Cambiar PIN Auditor</button>
+        </div>
+        <div>
+          <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:.5rem">PIN Solo Lectura</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">Para pastor, junta y hermanos autorizados.</div>
+          <div class="form-group"><label class="section-label">PIN Actual</label><input type="password" id="pv-old" maxlength="6"></div>
+          <div class="form-group"><label class="section-label">Nuevo PIN</label><input type="password" id="pv-new" maxlength="6"></div>
+          <div class="form-group"><label class="section-label">Confirmar</label><input type="password" id="pv-conf" maxlength="6"></div>
+          <button class="btn-gold" onclick="changePin('viewer')" style="width:auto;padding:10px 24px">Cambiar PIN Solo Lectura</button>
         </div>
       </div>
       <div id="pin-msg" class="error-msg" style="margin-top:.5rem"></div>
@@ -807,7 +817,7 @@ const SEED_DATA=[
 
 let S={
   role:null,
-  cfg:{name:"Iglesia del Nazareno",city:"Ciudad Melchor de Mencos, Petén, Guatemala",currency:"BZD",pin:"1234",auditorPin:"4321",treasurer:"Edwin David Lopez Castillo"},
+  cfg:{name:"Iglesia del Nazareno",city:"Ciudad Melchor de Mencos, Petén, Guatemala",currency:"BZD",pin:"1234",auditorPin:"4321",viewerPin:"0000",treasurer:"Edwin David Lopez Castillo"},
   txs:[],auditLog:[],budgets:{},
   chart:null,annualChart:null,url:"",
   pendingImg:"",cropper:null,editingId:null,
@@ -936,6 +946,7 @@ function doLogin(){
   const pin=document.getElementById("pin-in").value;
   if(pin===S.cfg.pin){document.getElementById("pin-err").style.display="none";S.role="treasurer";showApp();}
   else if(pin===S.cfg.auditorPin){document.getElementById("pin-err").style.display="none";S.role="auditor";showApp();}
+  else if(pin===S.cfg.viewerPin){document.getElementById("pin-err").style.display="none";S.role="viewer";showApp();}
   else document.getElementById("pin-err").style.display="block";
 }
 function showApp(){
@@ -1742,21 +1753,21 @@ async function saveSettings(){
   }catch(e){notify("Error al guardar.","err");}
 }
 async function changePin(target){
-  const pre=target==="auditor"?"pa":"p";
+  const pre=target==="auditor"?"pa":target==="viewer"?"pv":"p";
   const op=document.getElementById(pre+"-old").value;
   const np=document.getElementById(pre+"-new").value;
   const cp=document.getElementById(pre+"-conf").value;
   const msg=document.getElementById("pin-msg");
-  const curPin=target==="auditor"?S.cfg.auditorPin:S.cfg.pin;
+  const curPin=target==="auditor"?S.cfg.auditorPin:target==="viewer"?S.cfg.viewerPin:S.cfg.pin;
   if(op!==curPin){msg.textContent="PIN actual incorrecto.";msg.style.color="var(--rd2)";msg.style.display="block";return;}
   if(np.length<4){msg.textContent="Mínimo 4 dígitos.";msg.style.color="var(--rd2)";msg.style.display="block";return;}
   if(np!==cp){msg.textContent="Los PINs no coinciden.";msg.style.color="var(--rd2)";msg.style.display="block";return;}
   msg.style.display="none";
-  if(target==="auditor")S.cfg.auditorPin=np; else S.cfg.pin=np;
+  if(target==="auditor")S.cfg.auditorPin=np; else if(target==="viewer")S.cfg.viewerPin=np; else S.cfg.pin=np;
   try{
     await api("setconfig",{data:S.cfg});
     [pre+"-old",pre+"-new",pre+"-conf"].forEach(id=>document.getElementById(id).value="");
-    await addAudit("Cambió PIN",`PIN de ${target==="auditor"?"Auditor":"Tesorero"} actualizado`);
+    await addAudit("Cambió PIN",`PIN de ${target==="auditor"?"Auditor":target==="viewer"?"Solo Lectura":"Tesorero"} actualizado`);
     notify("✓ PIN cambiado exitosamente.");
   }catch(e){notify("Error al guardar PIN.","err");}
 }
