@@ -235,21 +235,37 @@ mark{background:rgba(201,162,39,.3);color:var(--gold);border-radius:2px;padding:
   .hdr-sub{display:none}
 }
 @media print{
+  @page{size:letter portrait;margin:1.5cm 1.8cm}
   .app-hdr,.navbar,.btn-print,.btn-del,.btn-action,.metrics,.install-banner,
-  #tab-dash,#tab-ofrendas,#tab-diezmos,#tab-egresos,#tab-busqueda,
-  #tab-anual,#tab-audit,#tab-config{display:none!important}
-  body,#main-app,.card{background:#fff!important;color:#000!important}
-  .card{border:1px solid #ccc!important}
-  .rep-table th{background:#f5f5f5!important;color:#333!important}
-  .rep-table td{color:#000!important}
-  .rep-table td.tith{color:#7A5C0A!important}
-  .rep-table td.off{color:#1a3a7a!important}
+  #tab-dash,#tab-ofrendas,#tab-diezmos,#tab-egresos,#tab-intereses,
+  #tab-busqueda,#tab-anual,#tab-audit,#tab-config,
+  .mobile-hint{display:none!important}
+  body,html{background:#fff!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #main-app{display:block!important}
+  #tab-report{display:block!important}
+  .content{padding:0!important;max-width:100%!important}
+  .card{background:#fff!important;border:none!important;padding:0!important;margin:0!important}
+  .rep-hide-sm{display:table-cell!important}
+
+  /* PRINT HEADER */
+  .print-header{display:flex!important}
+  .print-gold-bar{display:block!important}
+  .print-section-hdr{display:block!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-summary-grid{display:grid!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-footer{display:flex!important}
+
+  /* REPORT TABLES */
+  .rep-table{font-size:10px!important;width:100%!important}
+  .rep-table th{font-size:9px!important;padding:5px 7px!important;background:#f5f3ee!important;color:#444!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .rep-table td{padding:4px 7px!important;font-size:10px!important;color:#1a1a1a!important;border-bottom:1px solid #e0d9cc!important}
   .rep-table td.inc{color:#1a6b2a!important}
   .rep-table td.exp{color:#8b1a0e!important}
-  .rep-church{color:#8B6E1A!important}
-  #tab-report{display:block!important}
-  .content{padding:0!important}
-  .rep-hide-sm{display:table-cell!important}
+  .rep-table td.tith{color:#7A5C0A!important}
+  .rep-table td.off{color:#1a3a7a!important}
+  .rep-table .subt td{background:#faf8f3!important;border-top:1.5px solid #C9A227!important;border-bottom:1.5px solid #C9A227!important}
+  .rep-table .tot td{background:#f5f3ee!important}
+  .rep-hdr{display:none!important}
+  .rep-footer{display:none!important}
 }
 </style>
 </head>
@@ -1543,6 +1559,7 @@ function renderReport(){
     <div class="rep-period">${MONTHS[m]} ${y}</div>
   </div>
 
+  <div class="print-section-hdr" style="display:none;background:#0a0a0d;color:#C9A227;font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;margin-top:1rem">INGRESOS</div>
   <table class="rep-table">
     <thead><tr><th>Descripción</th><th class="tr">Cantidad (${C})</th></tr></thead>
     <tbody>
@@ -1556,6 +1573,7 @@ function renderReport(){
   h+=`<tr class="subt"><td>Total Ingresos del Mes</td>${R(ing,"inc")}</tr>
     </tbody></table>
 
+  <div class="print-section-hdr" style="display:none;background:#0a0a0d;color:#C9A227;font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;margin-top:1rem">EGRESOS</div>
   <table class="rep-table">
     <thead><tr><th style="width:82px">Fecha</th><th>Egresos</th><th class="rep-hide-sm" style="width:70px">Recibo</th><th class="rep-hide-sm" style="width:110px">Categoría</th><th class="tr" style="width:90px">Monto (${C})</th></tr></thead>
     <tbody>`;
@@ -1574,6 +1592,7 @@ function renderReport(){
   h+=`<tr class="tot"><td colspan="2" style="text-align:right;font-weight:700">Total de Egresos</td><td class="rep-hide-sm" colspan="2"></td>${R(exp,"exp")}</tr>
     </tbody></table>
 
+  <div class="print-section-hdr" style="display:none;background:#0a0a0d;color:#C9A227;font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;margin-top:1rem">RESUMEN DEL MES</div>
   <table class="rep-table" style="margin-top:5px">
     <thead><tr><th colspan="2">Resumen del Mes</th></tr></thead>
     <tbody>
@@ -1593,6 +1612,7 @@ function renderReport(){
   const catEntries=Object.entries(catGroups).sort((a,b)=>b[1]-a[1]);
 
   if(catEntries.length>0){
+    h+=`<div class="print-section-hdr" style="display:none;background:#0a0a0d;color:#C9A227;font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;margin-top:1rem">DESGLOSE DE EGRESOS POR CATEGORÍA</div>`;
     h+=`<table class="rep-table" style="margin-top:5px">
       <thead><tr><th>Desglose de Egresos por Categoría</th><th class="tr">Monto (${C})</th></tr></thead>
       <tbody>`;
@@ -1604,14 +1624,23 @@ function renderReport(){
   }
 
   if(S.cfg.treasurer){
-    h+=`<div class="rep-footer" style="margin-top:1.5rem;padding-top:.875rem;border-top:1px solid var(--bord)">
+    h+=`
+    <div class="rep-footer" style="margin-top:1.5rem;padding-top:.875rem;border-top:1px solid var(--bord)">
       <div style="display:flex;justify-content:space-between;align-items:flex-end">
         <div style="text-align:left">
           <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.05em">Tesorero</div>
           <div style="color:var(--text);font-weight:500">${S.cfg.treasurer}</div>
         </div>
       </div>
-    </div>`;
+    </div>
+    <div class="print-footer" style="display:none;margin-top:2rem;padding-top:1rem;border-top:2px solid #C9A227;justify-content:space-between;align-items:flex-end">
+      <div style="text-align:center;min-width:220px">
+        <div style="border-bottom:1px solid #444;height:28px;margin-bottom:5px"></div>
+        <div style="font-size:11px;font-weight:700;color:#1a1a1a">${S.cfg.treasurer}</div>
+        <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.05em">Tesorero</div>
+      </div>
+    </div>
+    <div class="print-gold-bar" style="display:none;height:4px;background:#C9A227;margin-top:1.5rem;border-radius:2px"></div>`;
   }
 
   el.innerHTML=h;
